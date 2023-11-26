@@ -47,11 +47,18 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-volatile uint16_t adcResultsDMA [2];
+volatile uint16_t adcResultsDMA [4];
 const int adcChannelCount = sizeof(adcResultsDMA)/sizeof(adcResultsDMA[0]);
 volatile int adcConversionComplete = 0;
 
 char buffer[100] = {0};
+int shoppingList[4] = {0, 0, 0, 0};
+char* shoppingNames[4] = {"Tomato", "Potatoes", "Apples", "Milk"};
+char* emptyString = "                                          ";
+
+uint8_t msg;
+
+int flag = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -103,6 +110,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+		__HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
 	
   /* USER CODE END 2 */
 
@@ -116,10 +124,54 @@ int main(void)
 		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)adcResultsDMA,adcChannelCount);
 		while(adcConversionComplete == 0){}
 		adcConversionComplete = 0;
-		 sprintf(buffer, "ch1 = %d - ch2 = %d \r\n", adcResultsDMA[0], adcResultsDMA[1]);
-		//sprintf(buffer, "ch1 = %d \r\n", adcResultsDMA[0]);
-		HAL_UART_Transmit(&huart2, (uint8_t*) buffer, sizeof(buffer), 100);
+//		 sprintf(buffer, "ch1 = %d - ch2 = %d - ch3 = %d - ch4 = %d \r\n", adcResultsDMA[0], adcResultsDMA[1], adcResultsDMA[2], adcResultsDMA[3]);
+//		//sprintf(buffer, "ch1 = %d \r\n", adcResultsDMA[0]);
+//		HAL_UART_Transmit(&huart2, (uint8_t*) buffer, sizeof(buffer), 100);
+//			
+		// Updating the shopping List based on the snesors readings	
+		for (int i = 0; i < adcChannelCount; i++){
+			if(adcResultsDMA[i] > 1000) shoppingList[i] = 1;
+			else shoppingList[i] = 0;
+		}	
+		
+		if(flag == 1){
+			// 'S' for Shopping List
+			if(msg == 'S'){
+				int count  = 0;
+				
+				sprintf(buffer, "Your Shopping List: \r\n");
+				HAL_UART_Transmit(&huart2, (uint8_t*) buffer, sizeof(buffer), 100);
+				
+				for (int i = 0; i < 4; i++){
+					if(shoppingList[i] == 1){
+						//sprintf(buffer,"%s",emptyString); 
+						char buffer[100] = {0};
+						sprintf(buffer, "item = %s \r\n", shoppingNames[i]);
+						HAL_UART_Transmit(&huart2, (uint8_t*) buffer, sizeof(buffer), 100);
+						count+=1; 
+					}
+				 }
+				
+				if (count == 0){
+						//sprintf(buffer,"%s",emptyString);
+					char buffer[100] = {0};
+					sprintf(buffer, "It is EMPTY!! \r\n");
+					HAL_UART_Transmit(&huart2, (uint8_t*) buffer, sizeof(buffer), 100);
+				}
+				
+				
+			}else {
+				char buffer[100] = {0};
+				sprintf(buffer, "Invlaid charachter = %u \r\n", msg);
+				HAL_UART_Transmit(&huart2, (uint8_t*) buffer, sizeof(buffer), 100);
+		}
+			
+			flag = 0;
+		}
+		
 		HAL_Delay(300);
+
+			
 		
   }
   /* USER CODE END 3 */
@@ -213,7 +265,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
-  hadc1.Init.NbrOfConversion = 2;
+  hadc1.Init.NbrOfConversion = 4;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
@@ -246,6 +298,24 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_10;
+  sConfig.Rank = ADC_REGULAR_RANK_3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_11;
+  sConfig.Rank = ADC_REGULAR_RANK_4;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
@@ -268,7 +338,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -303,7 +373,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 9600;//115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
