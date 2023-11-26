@@ -22,4 +22,4 @@
   - TXD on Bluetooth module connected to D0 (Rx of UART1) on STM32.
   - RXD on Bluetooth module connected to A7 (TX of UART2) on STM32.
 
-    ![alt text](/pics/circuit-task1.heic)
+    ![alt text](circuit-task1.heic)
