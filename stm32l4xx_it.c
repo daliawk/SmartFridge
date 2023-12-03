@@ -47,6 +47,8 @@ extern int flag;
 char bufferIT[100] = {0};
 extern int shoppingList[4];
 extern char* shoppingNames[4];
+volatile uint8_t p = 0;
+uint8_t temp = 0;
 
 /* USER CODE END PV */
 
@@ -66,7 +68,10 @@ extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
 extern UART_HandleTypeDef huart2;
 extern 	char* emptyString;
+extern int NoteFlag;
+extern int printLCDFlag;
 
+extern volatile char LCD_buffer[32];
 
 /* USER CODE END EV */
 
@@ -228,8 +233,24 @@ void DMA1_Channel1_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
+	if (NoteFlag == 0){
 		HAL_UART_Receive(&huart1, &msg ,1, 100);
-	  flag = 1;
+		flag = 1;
+	}
+	else{
+		HAL_UART_Receive(&huart1, &temp ,1, 100);
+//		while(HAL_UART_Receive(&huart1, &temp ,1, 100) == 0x0){
+//			LCD_buffer[p] = temp;
+//			p++;
+//		}
+//		p=0;
+		printLCDFlag = 1;
+		//printLCDFlag = 1;
+		//HAL_UART_Receive(&huart1, (uint8_t*)LCD_buffer ,32, 100);
+	}
+	
+	
+	
 //		if(msg == 'S'){
 //			int count  = 0;
 //			

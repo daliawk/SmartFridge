@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "liquidcrystal_i2c.h"
 #include<stdio.h>
 /* USER CODE END Includes */
 
@@ -43,6 +44,8 @@
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
+I2C_HandleTypeDef hi2c1;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
@@ -59,6 +62,11 @@ char* emptyString = "                                          ";
 uint8_t msg;
 
 int flag = 0;
+volatile int NoteFlag = 0;
+volatile int printLCDFlag = 0;
+
+char LCD_buffer[32] = {0};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,6 +76,7 @@ static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -109,9 +118,12 @@ int main(void)
   MX_ADC1_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 		__HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
-	
+		HD44780_Init(2);
+	  HD44780_Clear();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -160,13 +172,36 @@ int main(void)
 				}
 				
 				
+			}else if(msg == 'P' && NoteFlag == 0){
+				NoteFlag = 1;
+			
 			}else {
 				char buffer[100] = {0};
 				sprintf(buffer, "Invlaid charachter = %u \r\n", msg);
 				HAL_UART_Transmit(&huart2, (uint8_t*) buffer, sizeof(buffer), 100);
-		}
+//				if (NoteFlag == 0){
+//					char buffer[100] = {0};
+//					sprintf(buffer, "Invlaid charachter = %u \r\n", msg);
+//					HAL_UART_Transmit(&huart2, (uint8_t*) buffer, sizeof(buffer), 100);
+//				}else{
+//						HD44780_Clear();
+//						HD44780_SetCursor(0,0);
+//						HD44780_PrintStr("Hi hi captain!");
+//						NoteFlag = 0;
+
+//				}
+			}
 			
 			flag = 0;
+
+		}
+		
+		if(printLCDFlag == 1){
+			HD44780_Clear();
+			HD44780_SetCursor(0,0);
+			HD44780_PrintStr("Hi hi captain!");
+			NoteFlag = 0;
+			printLCDFlag = 0;
 		}
 		
 		HAL_Delay(300);
@@ -323,6 +358,54 @@ static void MX_ADC1_Init(void)
 }
 
 /**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x00707CBB;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -373,7 +456,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 9600;//115200;
+  huart2.Init.BaudRate = 9600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
