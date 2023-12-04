@@ -55,8 +55,8 @@ const int adcChannelCount = sizeof(adcResultsDMA)/sizeof(adcResultsDMA[0]);
 volatile int adcConversionComplete = 0;
 
 char buffer[100] = {0};
-int shoppingList[4] = {0, 0, 0, 0};
-char* shoppingNames[4] = {"Tomato", "Potatoes", "Apples", "Milk"};
+int shoppingList[4] = {0, 0, 0};
+char* shoppingNames[4] = {"Tomato", "Apples", "Milk", "Water"};
 char* emptyString = "                                          ";
 
 uint8_t msg;
@@ -77,8 +77,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_USART1_UART_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -119,8 +119,8 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
-  MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  MX_USART1_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 		__HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
@@ -148,7 +148,10 @@ int main(void)
 		for (int i = 0; i < adcChannelCount; i++){
 			if(adcResultsDMA[i] > 1000) shoppingList[i] = 1;
 			else shoppingList[i] = 0;
-		}	
+		}
+
+			if(adcResultsDMA[3] > 1000) HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+		else HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
 		
 		if(flag == 1){
 			// 'S' for Shopping List
@@ -517,14 +520,14 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : LD3_Pin */
-  GPIO_InitStruct.Pin = LD3_Pin;
+  /*Configure GPIO pin : PB4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD3_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
