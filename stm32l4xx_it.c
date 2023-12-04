@@ -47,8 +47,8 @@ extern int flag;
 char bufferIT[100] = {0};
 extern int shoppingList[4];
 extern char* shoppingNames[4];
-volatile uint8_t p = 0;
-uint8_t temp = 0;
+extern uint8_t p;
+extern uint8_t temp;
 
 /* USER CODE END PV */
 
@@ -233,45 +233,32 @@ void DMA1_Channel1_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-	if (NoteFlag == 0){
-		HAL_UART_Receive(&huart1, &msg ,1, 100);
-		flag = 1;
-	}
-	else{
-		HAL_UART_Receive(&huart1, &temp ,1, 100);
+//	if (NoteFlag == 0){
+//		HAL_UART_Receive(&huart1, &msg ,1, 100);
+//		flag = 1;
+//	}
+//	else{
+//		int dot_flag = 0;
+//		while(dot_flag == 0){
+//			HAL_UART_Receive(&huart1, &temp ,1, 100);
+//			LCD_buffer[p] = temp;
+//			p++;
+//			
+//			if(temp == '.') dot_flag = 1;
+//		}
+//		HAL_UART_Receive(&huart1, &temp ,1, 100);
 //		while(HAL_UART_Receive(&huart1, &temp ,1, 100) == 0x0){
 //			LCD_buffer[p] = temp;
 //			p++;
 //		}
 //		p=0;
-		printLCDFlag = 1;
+		//printLCDFlag = 1;
 		//printLCDFlag = 1;
 		//HAL_UART_Receive(&huart1, (uint8_t*)LCD_buffer ,32, 100);
-	}
+	//}
 	
 	
-	
-//		if(msg == 'S'){
-//			int count  = 0;
-//			
-//			sprintf(bufferIT, "Your Shopping List: \r\n");
-//			HAL_UART_Transmit(&huart2, (uint8_t*) bufferIT, sizeof(bufferIT), 100);
-//			
-//			for (int i = 0; i < 4; i++){
-//				if(shoppingList[i] == 1){
-//					sprintf(bufferIT, "item = %s \r\n", shoppingNames[i]);
-//					HAL_UART_Transmit(&huart2, (uint8_t*) bufferIT, sizeof(bufferIT), 100);
-//					count+=1; 
-//				}
-//			 }
-//			
-//			if (count == 0){
-//				sprintf(bufferIT, "It is EMPTY!! \r\n");
-//				HAL_UART_Transmit(&huart2, (uint8_t*) bufferIT, sizeof(bufferIT), 100);
-//			}
-//			
-//			
-//		}
+
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */

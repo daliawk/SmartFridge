@@ -67,6 +67,9 @@ volatile int printLCDFlag = 0;
 
 char LCD_buffer[32] = {0};
 
+uint8_t temp = 0; 
+uint8_t p = 0; 
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -123,7 +126,8 @@ int main(void)
 		__HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
 		HD44780_Init(2);
 	  HD44780_Clear();
-
+	
+	HAL_UART_Receive_IT(&huart1, &msg ,1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -174,6 +178,7 @@ int main(void)
 				
 			}else if(msg == 'P' && NoteFlag == 0){
 				NoteFlag = 1;
+				//HAL_UART_Receive_IT(&huart1, &temp ,1);
 			
 			}else {
 				char buffer[100] = {0};
@@ -199,9 +204,13 @@ int main(void)
 		if(printLCDFlag == 1){
 			HD44780_Clear();
 			HD44780_SetCursor(0,0);
-			HD44780_PrintStr("Hi hi captain!");
+//			HD44780_PrintStr("Hi hi captain!");
+			HD44780_PrintStr(LCD_buffer);
+			HD44780_SetCursor(0,1);
+			HD44780_PrintStr(LCD_buffer + 16);
 			NoteFlag = 0;
 			printLCDFlag = 0;
+			for(int i=0; i<32; i++) LCD_buffer[i] = 0;
 		}
 		
 		HAL_Delay(300);
@@ -524,6 +533,24 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
 	adcConversionComplete = 1;
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (NoteFlag == 0){
+		if(msg == 'P') HAL_UART_Receive_IT(&huart1, &temp ,1);
+		else HAL_UART_Receive_IT(&huart1, &msg ,1);
+		flag = 1;
+	} else {
+		LCD_buffer[p] = temp;
+		p++;			
+		if(temp == '.'){
+			p=0;
+			printLCDFlag = 1;
+			HAL_UART_Receive_IT(&huart1, &msg ,1);
+		}
+		else HAL_UART_Receive_IT(&huart1, &temp,  1);
+	}
 }
 /* USER CODE END 4 */
 
