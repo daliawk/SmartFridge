@@ -14,6 +14,7 @@
 - STM32 is receiving from UART1 and transimitting through UART2 through the bluetooth module -> Baud rates for both = 9600
 - Interrupts should be enabled globally for UART1
 - Before generating the code, go to the Project Manager tab, ensure that the Toolchain/IDE is MDK-ARM, then go to Code Generator and choose "Copy only the necessary library files"
+- Set PB4 as GPIO_Output
 
 ## Project Settings
 - Ensure that "Reset and Run" is checked. To check it, go to the "Options for Target...", click the "Debug" tab, click on "Settings" beside the ST-Link Debugger, choose the "Flash Download" tab, and click "Reset and Run".
@@ -32,9 +33,11 @@
 - VCC on Blutooth module connected to 3.3V on STM32.
 - TXD on Bluetooth module connected to D0 (Rx of UART1) on STM32.
 - RXD on Bluetooth module connected to A7 (TX of UART2) on STM32.
-- Ground on LCD adapter module connected with ground line on breadboard.
-- The VCC on the LCD adapter module connected the positive line on breadboard.
+- Ground on LCD adapter module connected with the ground line on the breadboard.
+- The VCC on the LCD adapter module connected the positive line on the breadboard.
 - The SDA on the LCD adapter module connected the D4 on STM32.
 - The SCL on the LCD adapter module connected the D5 on STM32.
+- Connect the long side of an LED to D12.
+- Connect the short side of an LED to the ground line on the breadboard.
   
     ![alt text](circuit-task1.png)
