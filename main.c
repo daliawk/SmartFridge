@@ -140,11 +140,8 @@ int main(void)
 		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)adcResultsDMA,adcChannelCount);
 		while(adcConversionComplete == 0){}
 		adcConversionComplete = 0;
-//		 sprintf(buffer, "ch1 = %d - ch2 = %d - ch3 = %d - ch4 = %d \r\n", adcResultsDMA[0], adcResultsDMA[1], adcResultsDMA[2], adcResultsDMA[3]);
-//		//sprintf(buffer, "ch1 = %d \r\n", adcResultsDMA[0]);
-//		HAL_UART_Transmit(&huart2, (uint8_t*) buffer, sizeof(buffer), 100);
-//			
-		// Updating the shopping List based on the snesors readings	
+
+		// Updating the shopping List based on the sensors' readings	
 		for (int i = 0; i < adcChannelCount; i++){
 			if(adcResultsDMA[i] > 1000) shoppingList[i] = 1;
 			else shoppingList[i] = 0;
@@ -163,7 +160,6 @@ int main(void)
 				
 				for (int i = 0; i < 4; i++){
 					if(shoppingList[i] == 1){
-						//sprintf(buffer,"%s",emptyString); 
 						char buffer[100] = {0};
 						sprintf(buffer, "item = %s \r\n", shoppingNames[i]);
 						HAL_UART_Transmit(&huart2, (uint8_t*) buffer, sizeof(buffer), 100);
@@ -172,7 +168,6 @@ int main(void)
 				 }
 				
 				if (count == 0){
-						//sprintf(buffer,"%s",emptyString);
 					char buffer[100] = {0};
 					sprintf(buffer, "It is EMPTY!! \r\n");
 					HAL_UART_Transmit(&huart2, (uint8_t*) buffer, sizeof(buffer), 100);
@@ -181,7 +176,6 @@ int main(void)
 				
 			}else if(msg == 'P' && NoteFlag == 0){
 				NoteFlag = 1;
-				//HAL_UART_Receive_IT(&huart1, &temp ,1);
 			
 			}else {
 				char buffer[100] = {0};
@@ -540,11 +534,11 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (NoteFlag == 0){
+	if (NoteFlag == 0){ // If the previous message was not P
 		if(msg == 'P') HAL_UART_Receive_IT(&huart1, &temp ,1);
 		else HAL_UART_Receive_IT(&huart1, &msg ,1);
 		flag = 1;
-	} else {
+	} else { // If the previous message was P
 		LCD_buffer[p] = temp;
 		p++;			
 		if(temp == '.'){
