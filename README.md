@@ -40,4 +40,4 @@
 - Connect the long side of an LED to D12.
 - Connect the short side of an LED to the ground line on the breadboard.
   
-    ![alt text](circuit.png)
+    ![alt text](circuit.PNG)
